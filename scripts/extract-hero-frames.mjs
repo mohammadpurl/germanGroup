@@ -23,7 +23,7 @@ const demoSource = path.join(ROOT, "public/video/hero-demo-source.mp4");
 const sourcePath = sourceArg ? path.resolve(sourceArg) : defaultSource;
 
 const desktopDir = path.join(ROOT, "public/video_frames");
-const mobileDir = path.join(ROOT, "public/video_frames");
+const mobileDir = path.join(ROOT, "public/video/frames-mobile");
 const posterPath = path.join(ROOT, "public/video_frames/f_001.webp");
 
 function runFfmpeg(args) {
@@ -145,9 +145,9 @@ const desktopCount = countFrames(desktopDir);
 const mobileCount = countFrames(mobileDir);
 
 console.log("\nDone.");
-console.log(`Desktop frames: ${desktopCount} → public/video/frames/`);
+console.log(`Desktop frames: ${desktopCount} → public/video_frames/`);
 console.log(`Mobile frames:  ${mobileCount} → public/video/frames-mobile/`);
-console.log(`Poster:         public/video/hero-poster.webp`);
+console.log(`Poster:         ${posterPath}`);
 console.log(
   `\nUpdate HERO_FRAME_COUNT in lib/hero-cinematic-config.ts if not ${desktopCount}.`
 );

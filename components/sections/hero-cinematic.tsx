@@ -7,12 +7,14 @@ import {
   HERO_FRAME_DESKTOP,
   HERO_FRAME_MOBILE,
   HERO_FRAME_PATHS,
-  HERO_MAX_FRAME_PROBE,
   HERO_MOBILE_BREAKPOINT,
+  HERO_PRELOAD_BATCH_SIZE,
   HERO_SCROLL_HEIGHT_VH,
   HERO_STORYBOARD,
   getChapterOpacity,
   getFrameUrl,
+  getHeroFrameProbeCount,
+  getHeroKeyFrameIndices,
   type HeroChapter,
 } from "@/lib/hero-cinematic-config";
 import { type Locale } from "@/lib/i18n";
@@ -108,35 +110,28 @@ function loadFrame(base: string, index: number) {
   });
 }
 
-/** Parallel preload — PDF: all frames in memory before scrub (no early break on one 404) */
-async function preloadFrameSet(
-  base: string,
-  maxProbe: number,
-  onProgress: (pct: number) => void
-) {
-  const slots: (HTMLImageElement | null)[] = new Array(maxProbe).fill(null);
-  let loaded = 0;
-  const batchSize = 32;
-
-  for (let start = 0; start < maxProbe; start += batchSize) {
-    const end = Math.min(start + batchSize, maxProbe);
-    await Promise.all(
-      Array.from({ length: end - start }, async (_, offset) => {
-        const index = start + offset;
-        try {
-          slots[index] = await loadFrame(base, index);
-        } catch {
-          slots[index] = null;
-        } finally {
-          loaded += 1;
-          onProgress(Math.round((loaded / maxProbe) * 100));
-        }
-      })
-    );
+function getBestLoadedFrame(slots: (HTMLImageElement | null)[], index: number) {
+  if (slots[index]) {
+    return slots[index];
   }
 
+  for (let offset = 1; offset < slots.length; offset += 1) {
+    const before = index - offset;
+    const after = index + offset;
+    if (before >= 0 && slots[before]) {
+      return slots[before];
+    }
+    if (after < slots.length && slots[after]) {
+      return slots[after];
+    }
+  }
+
+  return null;
+}
+
+function resolveFrameSequence(slots: (HTMLImageElement | null)[]) {
   let lastIndex = -1;
-  for (let i = maxProbe - 1; i >= 0; i -= 1) {
+  for (let i = slots.length - 1; i >= 0; i -= 1) {
     if (slots[i]) {
       lastIndex = i;
       break;
@@ -147,18 +142,63 @@ async function preloadFrameSet(
     throw new Error("no frames loaded");
   }
 
-  const images: HTMLImageElement[] = [];
-  let lastGood: HTMLImageElement | null = null;
-  for (let i = 0; i <= lastIndex; i += 1) {
-    if (slots[i]) {
-      lastGood = slots[i];
-      images[i] = slots[i]!;
-    } else if (lastGood) {
-      images[i] = lastGood;
+  return { slots, frameCount: lastIndex + 1 };
+}
+
+/**
+ * PDF: preload frame sequence — key milestones first (f_001, f_036, …),
+ * then remaining frames in background so scroll can start sooner.
+ */
+async function preloadFrameSetProgressive(
+  base: string,
+  maxProbe: number,
+  onProgress: (pct: number) => void,
+  onReadyToScrub: (slots: (HTMLImageElement | null)[], frameCount: number) => void
+) {
+  const slots: (HTMLImageElement | null)[] = new Array(maxProbe).fill(null);
+  let loaded = 0;
+
+  const report = () => onProgress(Math.round((loaded / maxProbe) * 100));
+
+  const loadIndex = async (index: number) => {
+    if (index < 0 || index >= maxProbe || slots[index]) {
+      return;
+    }
+
+    try {
+      slots[index] = await loadFrame(base, index);
+    } catch {
+      slots[index] = null;
+    } finally {
+      loaded += 1;
+      report();
+    }
+  };
+
+  await loadIndex(0);
+
+  const keyIndices = getHeroKeyFrameIndices(maxProbe).filter((index) => index !== 0);
+  await Promise.all(keyIndices.map((index) => loadIndex(index)));
+
+  if (!slots[0]) {
+    throw new Error("no frames loaded");
+  }
+
+  onReadyToScrub(slots, maxProbe);
+
+  const pending: number[] = [];
+  for (let index = 1; index < maxProbe; index += 1) {
+    if (!slots[index]) {
+      pending.push(index);
     }
   }
 
-  return { images, frameCount: lastIndex + 1 };
+  for (let start = 0; start < pending.length; start += HERO_PRELOAD_BATCH_SIZE) {
+    const batch = pending.slice(start, start + HERO_PRELOAD_BATCH_SIZE);
+    await Promise.all(batch.map((index) => loadIndex(index)));
+  }
+
+  return resolveFrameSequence(slots);
 }
 
 function getFrameConfig(width: number) {
@@ -211,7 +251,7 @@ export function HeroCinematic({ lang }: HeroCinematicProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const framesRef = useRef<HTMLImageElement[]>([]);
+  const framesRef = useRef<(HTMLImageElement | null)[]>([]);
   const frameCountRef = useRef(1);
   const frameSetRef = useRef<FrameSet>("desktop");
   const usesMobileFramesRef = useRef(false);
@@ -268,7 +308,7 @@ export function HeroCinematic({ lang }: HeroCinematicProps) {
       return;
     }
 
-    const img = frames[index];
+    const img = getBestLoadedFrame(frames, index);
     const ctx = canvas.getContext("2d");
 
     if (!ctx || !img?.complete) {
@@ -329,12 +369,26 @@ export function HeroCinematic({ lang }: HeroCinematicProps) {
       readyRef.current = false;
       currentFrameRef.current = -1;
 
+      const maxProbe = getHeroFrameProbeCount(config.usesMobileFrames);
+
       try {
-        const { images, frameCount } = await preloadFrameSet(
+        const { slots, frameCount } = await preloadFrameSetProgressive(
           config.base,
-          HERO_MAX_FRAME_PROBE,
+          maxProbe,
           (pct) => {
             if (!cancelled) setLoadProgress(pct);
+          },
+          (slots, frameCount) => {
+            if (cancelled) {
+              return;
+            }
+
+            framesRef.current = slots;
+            frameCountRef.current = frameCount;
+            readyRef.current = true;
+            setIsReady(true);
+            resizeCanvas();
+            scheduleDraw(pendingProgressRef.current);
           }
         );
 
@@ -342,11 +396,9 @@ export function HeroCinematic({ lang }: HeroCinematicProps) {
           return;
         }
 
-        framesRef.current = images;
+        framesRef.current = slots;
         frameCountRef.current = frameCount;
-        readyRef.current = true;
-        setIsReady(true);
-        resizeCanvas();
+        currentFrameRef.current = -1;
         scheduleDraw(pendingProgressRef.current);
       } catch {
         if (!cancelled) {
@@ -468,9 +520,9 @@ export function HeroCinematic({ lang }: HeroCinematicProps) {
         <div className="absolute inset-0 z-[2] hero-cinematic__vignette pointer-events-none" aria-hidden />
 
         {!isReady ? (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-[#0a0f14]/70 px-6">
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-[#0a0f14]/55 px-6">
             <p className="text-sm text-secondary">
-              {lang === "fa" ? "در حال بارگذاری فریم‌ها…" : "Loading frames…"}
+              {lang === "fa" ? "آماده‌سازی ویدیو…" : "Preparing video…"}
             </p>
             <div className="h-1 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
               <div

@@ -56,6 +56,18 @@ export default async function LandingPage({ params }: Props) {
 
   return (
     <main className="relative min-h-screen bg-background pb-dock-safe md:pb-0">
+      <link
+        rel="preload"
+        as="image"
+        href="/video_frames/f_001.webp"
+        media="(min-width: 768px)"
+      />
+      <link
+        rel="preload"
+        as="image"
+        href="/video/frames-mobile/f_001.webp"
+        media="(max-width: 767px)"
+      />
       <JsonLd
         data={[
           buildOrganizationSchema(),

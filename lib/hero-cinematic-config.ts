@@ -8,8 +8,27 @@ export const HERO_FRAME_COUNT = Math.max(HERO_DESKTOP_FRAME_COUNT, HERO_MOBILE_F
 /** Scroll distance (PDF: 400vh) */
 export const HERO_SCROLL_HEIGHT_VH = 400;
 
-/** Max frames to probe when preloading (desktop ~178, mobile ~194) */
-export const HERO_MAX_FRAME_PROBE = 220;
+/** Max frames to probe when preloading (match exported sequences) */
+export const HERO_MAX_FRAME_PROBE = Math.max(HERO_DESKTOP_FRAME_COUNT, HERO_MOBILE_FRAME_COUNT);
+
+/** PDF step 02: key milestones f_001, f_036, f_072, f_108, f_144, f_178 (1-based) */
+export const HERO_KEY_FRAME_MILESTONES_1_BASED = [1, 36, 72, 108, 144, 178] as const;
+
+/** Parallel fetch batch size (lower = gentler on slow 4G) */
+export const HERO_PRELOAD_BATCH_SIZE = 16;
+
+export function getHeroKeyFrameIndices(frameCount: number): number[] {
+  const maxIndex = Math.max(0, frameCount - 1);
+  const indices = HERO_KEY_FRAME_MILESTONES_1_BASED.map((oneBased) => {
+    const ratio = (oneBased - 1) / (HERO_DESKTOP_FRAME_COUNT - 1);
+    return Math.min(maxIndex, Math.round(ratio * maxIndex));
+  });
+  return [...new Set([0, maxIndex, ...indices])].sort((a, b) => a - b);
+}
+
+export function getHeroFrameProbeCount(isMobile: boolean): number {
+  return isMobile ? HERO_MOBILE_FRAME_COUNT : HERO_DESKTOP_FRAME_COUNT;
+}
 
 export const HERO_MOBILE_BREAKPOINT = 768;
 
