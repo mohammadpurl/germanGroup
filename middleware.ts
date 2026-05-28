@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import { defaultLang, locales } from "@/lib/i18n";
 
 export function middleware(request: Request) {
-  const { pathname } = new URL(request.url);
+  const url = new URL(request.url);
+  const { pathname } = url;
 
-  if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/admin")
+  ) {
     return NextResponse.next();
   }
 
@@ -13,10 +18,24 @@ export function middleware(request: Request) {
   });
 
   if (!hasLocale) {
-    return NextResponse.redirect(new URL(`/${defaultLang}${pathname}`, request.url));
+    url.pathname = `/${defaultLang}${pathname}`;
+    return NextResponse.redirect(url, 308);
   }
 
-  return NextResponse.next();
+  const locale =
+    locales.find(
+      (currentLocale) =>
+        pathname === `/${currentLocale}` || pathname.startsWith(`/${currentLocale}/`)
+    ) || defaultLang;
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-current-locale", locale);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {

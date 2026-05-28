@@ -1047,6 +1047,191 @@
     color: var(--color-gold-light) !important;
   }
 
+  /* ─── Admin Panel ────────────────────────────────────────── */
+  .admin-card {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .admin-input {
+    @apply w-full rounded-xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-primary outline-none transition-colors;
+  }
+
+  .admin-input:focus {
+    border-color: rgba(198, 169, 107, 0.45);
+    box-shadow: 0 0 0 3px rgba(198, 169, 107, 0.12);
+  }
+
+  .admin-icon-btn {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/4 text-secondary transition-colors hover:bg-white/8 hover:text-primary;
+  }
+
+  .admin-link {
+    @apply text-sm text-gold-light transition-colors hover:text-gold;
+  }
+
+  .admin-table th {
+    @apply px-5 py-3 text-start text-xs font-medium uppercase tracking-wider text-muted;
+  }
+
+  .admin-table td {
+    @apply border-t border-white/6 px-5 py-4 text-sm text-secondary;
+  }
+
+  .admin-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .admin-search {
+    @apply rounded-xl border border-white/10 bg-white/4 px-4 py-2.5;
+  }
+
+  /* ─── Hero Cinematic Scroll ──────────────────────────────── */
+  .hero-cinematic {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .hero-cinematic__pin {
+    height: 100dvh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .hero-cinematic__pin--fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 30;
+  }
+
+  .hero-cinematic__pin--end {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .hero-cinematic__vignette {
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(10, 15, 20, 0.75) 0%,
+      rgba(10, 15, 20, 0.2) 22%,
+      transparent 45%
+    );
+  }
+
+  .hero-cinematic__scrub-bar {
+    @apply pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-col justify-end px-4 pb-6 pt-10 sm:px-8;
+    background: linear-gradient(
+      to top,
+      rgba(8, 12, 18, 0.92) 0%,
+      rgba(8, 12, 18, 0.55) 38%,
+      transparent 100%
+    );
+  }
+
+  .hero-cinematic__chapter-stack {
+    position: relative;
+    width: 100%;
+    max-width: 48rem;
+    margin-inline: auto;
+    min-height: clamp(5.5rem, 16vw, 8.5rem);
+    margin-bottom: 1rem;
+  }
+
+  .hero-cinematic__scrub-track {
+    @apply mx-auto h-0.5 w-full max-w-3xl overflow-hidden rounded-full bg-white/15;
+  }
+
+  .hero-cinematic__scrub-fill {
+    @apply h-full origin-right rounded-full bg-gold transition-[width] duration-75 ease-linear;
+  }
+
+  .hero-cinematic canvas {
+    display: block;
+    background: #0a0f14;
+  }
+
+  .hero-chapter__scrim {
+    position: relative;
+    padding: 1.5rem 1.75rem;
+  }
+
+  .hero-chapter__scrim::before {
+    content: "";
+    position: absolute;
+    inset: -18% -12%;
+    z-index: -1;
+    border-radius: 1.5rem;
+    background: radial-gradient(
+      ellipse at 75% 100%,
+      rgba(8, 12, 18, 0.92) 0%,
+      rgba(8, 12, 18, 0.65) 42%,
+      transparent 78%
+    );
+    pointer-events: none;
+  }
+
+  .hero-chapter__kicker {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: clamp(0.8125rem, 1.8vw, 0.9375rem);
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    color: #e8d4a8;
+    text-shadow:
+      0 0 28px rgba(198, 169, 107, 0.45),
+      0 2px 16px rgba(0, 0, 0, 0.85),
+      0 1px 2px rgba(0, 0, 0, 0.9);
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid rgba(198, 169, 107, 0.35);
+    background: rgba(10, 15, 20, 0.45);
+    backdrop-filter: blur(8px);
+  }
+
+  .hero-chapter__kicker--en {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: clamp(0.75rem, 1.6vw, 0.8125rem);
+  }
+
+  .hero-chapter__title {
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: #f6f9fc;
+    text-shadow:
+      0 4px 32px rgba(0, 0, 0, 0.75),
+      0 2px 8px rgba(0, 0, 0, 0.85),
+      0 1px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .hero-chapter__subtitle {
+    margin-top: 1rem;
+    max-width: 36rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.0625rem, 2.4vw, 1.3125rem);
+    font-weight: 500;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    color: rgba(244, 248, 252, 0.94);
+    text-shadow:
+      0 2px 20px rgba(0, 0, 0, 0.8),
+      0 1px 4px rgba(0, 0, 0, 0.75);
+  }
+
   /* ─── Dashboard Mock ─────────────────────────────────────── */
   .dash-mock {
     background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));

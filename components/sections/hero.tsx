@@ -51,45 +51,21 @@ export function Hero({ lang }: HeroProps) {
       className="relative flex min-h-dvh scroll-mt-24 flex-col overflow-hidden bg-[#0a0f14]"
       aria-label="بخش اصلی"
     >
-      {/* دسکتاپ — پس‌زمینه تمام‌صفحه */}
-      <div className="absolute inset-0 z-0 hidden overflow-hidden lg:block" aria-hidden>
+      <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden>
         <Image
-          src="/Images/Heronew.png"
+          src="/Images/hero-garage.svg"
           alt=""
           fill
           priority
           sizes="100vw"
           className="hero-bg-media"
-          quality={92}
+          quality={85}
         />
         <div className="absolute inset-0 hero-vignette-mockup" />
       </div>
 
-      {/* موبایل — ابتدا تصویر */}
-      <div
-        className="relative z-10 h-[40vh] min-h-[220px] max-h-[380px] w-full shrink-0 overflow-hidden lg:hidden"
-        aria-hidden
-      >
-        <Image
-          src="/Images/Heronew.png"
-          alt={copy.imageAlt}
-          fill
-          priority
-          sizes="100vw"
-          className="hero-bg-mobile"
-          quality={92}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(10,15,20,0.35) 0%, transparent 35%, rgba(10,15,20,0.92) 100%)",
-          }}
-        />
-      </div>
-
       {/* محتوا — موبایل زیر تصویر / دسکتاپ روی تصویر */}
-      <div className="relative z-20 flex flex-1 flex-col justify-center pb-28 pt-6 lg:pb-36 lg:pt-28">
+      <div className="relative z-20 flex flex-1 flex-col justify-center pb-28 pt-[34vh] lg:pb-36 lg:pt-28">
         <Container>
           <div className="flex w-full flex-col gap-5 max-[429px]:gap-5 min-[430px]:flex-row min-[430px]:items-start min-[430px]:justify-between min-[430px]:gap-3 sm:gap-5 lg:items-center lg:gap-6">
             {/* RTL: راست — متن */}

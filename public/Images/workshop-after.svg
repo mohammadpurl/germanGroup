@@ -1,0 +1,32 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" fill="#081019"/>
+  <rect y="610" width="1200" height="290" fill="url(#paint0_linear)"/>
+  <path d="M134 604C192 528 302 492 506 476C734 458 892 464 982 496C1060 524 1126 578 1160 642L1160 704L70 704L70 654L134 604Z" fill="#152332" stroke="#35506A" stroke-width="4"/>
+  <path d="M457 515L818 507C892 505 964 534 1016 586L1042 612L284 612L340 552C372 528 413 517 457 515Z" fill="#21364A"/>
+  <path d="M280 184L940 184" stroke="url(#paint1_linear)" stroke-width="6"/>
+  <path d="M270 198L930 198" stroke="url(#paint2_linear)" stroke-opacity="0.55" stroke-width="2"/>
+  <g opacity="0.24">
+    <circle cx="255" cy="198" r="90" fill="#4DA3FF"/>
+    <circle cx="844" cy="160" r="160" fill="#E0C48A"/>
+  </g>
+  <path d="M240 710C293.019 710 336 667.019 336 614C336 560.981 293.019 518 240 518C186.981 518 144 560.981 144 614C144 667.019 186.981 710 240 710Z" fill="#0B141D" stroke="#506C87" stroke-width="6"/>
+  <path d="M970 710C1023.02 710 1066 667.019 1066 614C1066 560.981 1023.02 518 970 518C916.981 518 874 560.981 874 614C874 667.019 916.981 710 970 710Z" fill="#0B141D" stroke="#506C87" stroke-width="6"/>
+  <text x="88" y="122" fill="#EEF5FB" font-family="Arial, sans-serif" font-size="54" font-weight="700">AFTER SERVICE</text>
+  <text x="88" y="176" fill="#D7E6F4" font-family="Arial, sans-serif" font-size="24" letter-spacing="5">CALIBRATED · CLEAN · READY</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="600" y1="610" x2="600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17304A" stop-opacity="0"/>
+      <stop offset="1" stop-color="#091019"/>
+    </linearGradient>
+    <linearGradient id="paint1_linear" x1="280" y1="184" x2="940" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4DA3FF" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#4DA3FF"/>
+      <stop offset="1" stop-color="#4DA3FF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="paint2_linear" x1="270" y1="198" x2="930" y2="198" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

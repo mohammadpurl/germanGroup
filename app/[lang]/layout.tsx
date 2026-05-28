@@ -1,4 +1,7 @@
-import { locales, isRTL, type Locale } from "@/lib/i18n";
+import { FooterSection } from "@/components/sections/footer-section";
+import { GermanNavbar } from "@/components/nav/german-navbar";
+import { MobileDock } from "@/components/nav/mobile-dock";
+import { locales, type Locale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -19,7 +22,13 @@ export default async function LangLayout({ children, params }: Props) {
   }
 
   const locale = lang as Locale;
-  const dir = isRTL(locale) ? "rtl" : "ltr";
 
-  return <div dir={dir}>{children}</div>;
+  return (
+    <>
+      <GermanNavbar locale={locale} />
+      {children}
+      <FooterSection locale={locale} />
+      <MobileDock locale={locale} />
+    </>
+  );
 }

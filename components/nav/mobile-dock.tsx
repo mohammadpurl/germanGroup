@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Home,
   Cpu,
@@ -24,10 +25,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  MAIN_NAV_LINKS,
+  getMainNavLinks,
   PAGE_SECTION_IDS,
   type PageSectionId,
 } from "@/lib/site-nav";
+import type { Locale } from "@/lib/i18n";
 
 type DockId = PageSectionId;
 
@@ -40,25 +42,25 @@ const DOCK_ICONS: Record<DockId, LucideIcon> = {
   booking: Phone,
 };
 
-/** همان لیست منوی دسکتاپ */
-const ITEMS = MAIN_NAV_LINKS.map(({ label, href, sectionId }) => ({
-  id: sectionId as DockId,
-  label,
-  href,
-  icon: DOCK_ICONS[sectionId as DockId],
-  sectionId,
-}));
-
 /** عرض نشانگر آچار روی ریل (پیکسل) */
 const WRENCH_INDICATOR_WIDTH = 28;
 
-export function MobileDock() {
+export function MobileDock({ locale }: { locale: Locale }) {
   const [activeId, setActiveId] = useState<DockId>("home");
   const [wrenchX, setWrenchX] = useState(0);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const navRowRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Partial<Record<DockId, HTMLElement>>>({});
+  const pathname = usePathname();
+  const isHomePage = pathname === `/${locale}`;
+  const items = getMainNavLinks(locale).map(({ label, href, sectionId }) => ({
+    id: sectionId as DockId,
+    label,
+    href,
+    icon: DOCK_ICONS[sectionId as DockId],
+    sectionId,
+  }));
 
   const moveWrench = useCallback((id: DockId) => {
     const row = navRowRef.current;
@@ -86,9 +88,17 @@ export function MobileDock() {
   }, [activeId, moveWrench]);
 
   useEffect(() => {
-    const onScroll = () => {
+    if (!isHomePage) {
+      setActiveId("home");
+      return;
+    }
+
+    let frame = 0;
+
+    const measure = () => {
+      frame = 0;
       if (window.scrollY < 80) {
-        setActiveId("home");
+        setActiveId((current) => (current === "home" ? current : "home"));
         return;
       }
 
@@ -100,13 +110,24 @@ export function MobileDock() {
           next = sectionId;
         }
       }
-      setActiveId(next);
+      setActiveId((current) => (current === next ? current : next));
     };
 
-    onScroll();
+    const onScroll = () => {
+      if (!frame) {
+        frame = window.requestAnimationFrame(measure);
+      }
+    };
+
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+      }
+    };
+  }, [isHomePage]);
 
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const panel = panelRef.current;
@@ -131,7 +152,7 @@ export function MobileDock() {
           ref={navRowRef}
           className="relative z-[1] flex overflow-x-auto overscroll-x-contain scrollbar-none pt-2 pb-1 [-webkit-overflow-scrolling:touch]"
         >
-          {ITEMS.map(({ id, label, href, icon: Icon }, index) => {
+          {items.map(({ id, label, href, icon: Icon }, index) => {
             const isActive = id === activeId;
 
             return (
@@ -155,7 +176,7 @@ export function MobileDock() {
                     moveWrench(id);
                   }}
                   aria-label={label}
-                  aria-current={isActive ? "page" : undefined}
+                  aria-current={isHomePage && isActive ? "location" : undefined}
                   className={cn(
                     "relative z-[1] flex w-full flex-col items-center justify-center gap-0.5 px-0.5 py-1.5 transition-all duration-[400ms] sm:gap-1 sm:py-2",
                     isActive

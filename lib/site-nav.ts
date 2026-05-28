@@ -1,4 +1,5 @@
-/** ترتیب بخش‌ها در صفحه اصلی — برای scroll spy */
+import type { Locale } from "@/lib/i18n";
+
 export const PAGE_SECTION_IDS = [
   "home",
   "brands",
@@ -10,12 +11,25 @@ export const PAGE_SECTION_IDS = [
 
 export type PageSectionId = (typeof PAGE_SECTION_IDS)[number];
 
-/** لینک‌های منوی اصلی (خانه → تماس/رزرو) */
-export const MAIN_NAV_LINKS = [
-  { label: "خانه",           href: "#home",       sectionId: "home"       },
-  { label: "تخصص ما",        href: "#brands",     sectionId: "brands"     },
-  { label: "خدمات",          href: "#services",   sectionId: "services"   },
-  { label: "فضای تعمیرگاه",  href: "#workshop",   sectionId: "workshop"   },
-  { label: "دیاگونستیک",     href: "#diagnostic", sectionId: "diagnostic" },
-  { label: "تماس با ما",     href: "#booking",    sectionId: "booking"    },
-] as const;
+const NAV_ITEMS = [
+  { label: "خانه", sectionId: "home" },
+  { label: "تخصص ما", sectionId: "brands" },
+  { label: "خدمات", sectionId: "services" },
+  { label: "فضای تعمیرگاه", sectionId: "workshop" },
+  { label: "دیاگ", sectionId: "diagnostic" },
+  { label: "رزرو", sectionId: "booking" },
+] as const satisfies ReadonlyArray<{
+  label: string;
+  sectionId: PageSectionId;
+}>;
+
+export function getSectionHref(locale: Locale, sectionId: PageSectionId) {
+  return sectionId === "home" ? `/${locale}#home` : `/${locale}#${sectionId}`;
+}
+
+export function getMainNavLinks(locale: Locale) {
+  return NAV_ITEMS.map((item) => ({
+    ...item,
+    href: getSectionHref(locale, item.sectionId),
+  }));
+}

@@ -5,18 +5,18 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Phone, MapPin, Instagram, ChevronLeft } from "lucide-react";
-import { MAIN_NAV_LINKS } from "@/lib/site-nav";
+import { getMainNavLinks } from "@/lib/site-nav";
+import { siteConfig } from "@/lib/site-config";
+import type { Locale } from "@/lib/i18n";
 
-const INSTAGRAM_URL = "https://www.instagram.com/german.group/";
-const PHONE_TEL = "tel:+989122262329";
-const PHONE_DISPLAY = "۰۹۱۲۲۲۶۲۳۲۹";
+const PHONE_TEL = `tel:${siteConfig.phone}`;
+const PHONE_DISPLAY = siteConfig.phoneDisplayFa;
 const CONTACT_NAME = "مهدی بابایی";
-const ADDRESS =
-  "آدرس مجموعه: تهران، خیابان دارآباد، نرسیده به بیمارستان مسیح دانشوری";
+const ADDRESS = `آدرس مجموعه: ${siteConfig.address.locality}، ${siteConfig.address.street}`;
 
-const nav = MAIN_NAV_LINKS.map(({ label, href }) => ({ label, href }));
+export function FooterSection({ locale }: { locale: Locale }) {
+  const nav = getMainNavLinks(locale);
 
-export function FooterSection() {
   return (
     <footer className="relative pt-16 pb-8 border-t border-white/6 overflow-hidden">
       <div
@@ -29,7 +29,7 @@ export function FooterSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-14">
           {/* brand */}
           <div className="flex flex-col gap-4 lg:col-span-2">
-            <Link href="/fa" className="flex w-fit shrink-0 items-center gap-3">
+            <Link href={`/${locale}`} className="flex w-fit shrink-0 items-center gap-3">
               <div
                 className="flex h-10 w-10 items-center justify-center rounded-lg text-lg font-bold text-[#0a0f14]"
                 style={{
@@ -51,7 +51,7 @@ export function FooterSection() {
               </div>
             </Link>
             <a
-              href={INSTAGRAM_URL}
+              href={siteConfig.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex w-fit items-center gap-3 text-sm text-secondary hover:text-gold transition-colors"

@@ -2,29 +2,42 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  MAIN_NAV_LINKS,
+  getMainNavLinks,
   PAGE_SECTION_IDS,
   type PageSectionId,
 } from "@/lib/site-nav";
+import type { Locale } from "@/lib/i18n";
 
 type NavId = PageSectionId;
 
-export function GermanNavbar() {
+export function GermanNavbar({ locale }: { locale: Locale }) {
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<NavId>("home");
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const navCenterRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const isHomePage = pathname === `/${locale}`;
+  const navLinks = getMainNavLinks(locale);
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 16);
+    if (!isHomePage) {
+      setActiveId("home");
+      return;
+    }
 
+    let frame = 0;
+
+    const measure = () => {
+      frame = 0;
+      const nextScrolled = window.scrollY > 16;
+      setScrolled((current) => (current === nextScrolled ? current : nextScrolled));
       if (window.scrollY < 80) {
-        setActiveId("home");
+        setActiveId((current) => (current === "home" ? current : "home"));
         return;
       }
 
@@ -35,13 +48,24 @@ export function GermanNavbar() {
           found = sectionId;
         }
       }
-      setActiveId(found);
+      setActiveId((current) => (current === found ? current : found));
     };
 
-    onScroll();
+    const onScroll = () => {
+      if (!frame) {
+        frame = window.requestAnimationFrame(measure);
+      }
+    };
+
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+      }
+    };
+  }, [isHomePage]);
 
   useEffect(() => {
     const el = linkRefs.current[activeId];
@@ -61,11 +85,11 @@ export function GermanNavbar() {
         "fixed inset-x-0 top-0 z-50 transition-all duration-500",
         scrolled
           ? "border-b border-white/8 bg-background/90 shadow-[0_4px_28px_rgba(0,0,0,0.5)] backdrop-blur-xl"
-          : "bg-gradient-to-b from-[#0a0f14]/85 to-transparent"
+          : "bg-transparent"
       )}
     >
       <nav className="container-custom relative flex h-16 items-center justify-between lg:h-[4.75rem]">
-        <Link href="/fa" className="flex shrink-0 items-center gap-3">
+          <Link href={`/${locale}`} className="flex shrink-0 items-center gap-3">
           <div
             className="flex h-10 w-10 items-center justify-center rounded-lg text-lg font-bold text-[#0a0f14]"
             style={{
@@ -91,7 +115,7 @@ export function GermanNavbar() {
           ref={navCenterRef}
           className="absolute left-1/2 hidden max-w-[min(70vw,48rem)] -translate-x-1/2 items-center gap-0.5 overflow-x-auto pb-1 scrollbar-none [-webkit-overflow-scrolling:touch] md:flex lg:max-w-[min(58rem,72vw)]"
         >
-          {MAIN_NAV_LINKS.map(({ label, href, sectionId }) => {
+          {navLinks.map(({ label, href, sectionId }) => {
             const isActive = activeId === sectionId;
             return (
               <a
@@ -104,6 +128,7 @@ export function GermanNavbar() {
                   "relative px-2.5 py-2 text-xs font-medium transition-colors duration-300 xl:px-3.5 xl:text-sm",
                   isActive ? "text-gold" : "text-secondary hover:text-primary"
                 )}
+                aria-current={isHomePage && isActive ? "location" : undefined}
               >
                 {label}
               </a>
@@ -125,7 +150,10 @@ export function GermanNavbar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2.5">
-          <Link href="#booking" className="btn-gold hidden !px-5 !py-2.5 text-xs sm:inline-flex">
+          <Link
+            href={`/${locale}#booking`}
+            className="btn-gold hidden !px-5 !py-2.5 text-xs sm:inline-flex"
+          >
             رزرو نوبت
           </Link>
           <button
